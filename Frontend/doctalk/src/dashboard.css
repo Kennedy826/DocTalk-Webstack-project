@@ -1,0 +1,29 @@
+.App-header {
+  display: flex;
+  align-items: center;
+  color: rgb(231, 80, 80);
+  border-bottom: thick solid rgb(231, 80, 80);
+}
+
+.App-header h1 {
+  margin: 0;
+}
+
+
+.App-body {
+  padding: 2rem 0 0 2rem;
+}
+
+.btn {
+  padding: 14px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-secondary {
+  background: rgb(0, 24, 111);
+  color: #fff;
+}
