@@ -3,10 +3,14 @@
 
 from flask import Blueprint, request, jsonify, make_response
 from models.user import User
+from models.revoked_token import RevokedToken
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token,
-    create_refresh_token
+    create_refresh_token,
+    jwt_required,
+    get_jwt_identity,
+    get_jwt
 )
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -47,8 +51,8 @@ def login():
 
     user = User.get_user_by_email(email)
     if user and user.password and check_password_hash(user.password, password):
-        access_token = create_access_token(identity=user.username)
-        refresh_token = create_refresh_token(identity=user.username)
+        access_token = create_access_token(identity=user.email)
+        refresh_token = create_refresh_token(identity=user.email)
 
         return make_response(jsonify(
             {"message": "Login successful",
@@ -62,6 +66,23 @@ def login():
 
 
 @bp.route('/logout', methods=['GET'])
+@jwt_required()
 def logout():
     """ Logs out a user """
+    jti = get_jwt()['jti']
+
+    # Add the token JTI to the blocklist
+    print(RevokedToken.add_token_to_blocklist(jti))
+
     return jsonify({"message": "Logged out successfully"})
+
+
+@bp.route("/refresh")
+@jwt_required(refresh=True)
+def refresh():
+    "Genereates a new access token"    
+    current_user = get_jwt_identity()
+
+    new_access_token = create_access_token(identity=current_user)
+
+    return make_response(jsonify({"access_token": new_access_token}), 200)

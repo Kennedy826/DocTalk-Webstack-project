@@ -30,9 +30,9 @@ class User(Document):
 
             return user
 
-    def create_user(email, name, password):
+    def create_user(email, username, password):
         """ Creates and adds a new user to the database """
-        new_user = User(email=email, username=name, password=password)
+        new_user = User(email=email, username=username, password=password)
         new_user.save()
 
         return new_user

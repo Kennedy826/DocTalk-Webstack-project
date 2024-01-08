@@ -2,16 +2,18 @@
 """ Routes for chat messages """
 
 from flask import Blueprint, request, jsonify, make_response
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from functools import wraps
 from datetime import datetime
 from models.chat_message import ChatMessage
 from models.chat_room import ChatRoom
+from models.user import User
+from models.revoked_token import RevokedToken
 
 chats_bp = Blueprint('chat_message_routes', __name__, url_prefix='/chats')
 
 
-# user must be logged in to chat
+# user must be logged in to access chatrooms
 def logged_in(func):
     """
     Decorator function that checks if a user is logged in.
@@ -26,12 +28,20 @@ def logged_in(func):
     @jwt_required()
     def wrapper(*args, **kwargs):
         current_user = get_jwt_identity()
+
+         # Check if the token JTI is in the revoked tokens
+        jti = get_jwt()['jti']
+        print(jti)
+        if RevokedToken.is_token_blacklisted(jti):
+            return jsonify({"error": "Token has been revoked. User is logged out"}), 401
+        
         return func(current_user, *args, **kwargs)
+    
     return wrapper
 
 
 @chats_bp.route('/send_message', methods=['POST'])
-@jwt_required()
+@logged_in
 def send_message(current_user):
     """ Sends a message to a chat room """
     data = request.get_json()
@@ -67,15 +77,22 @@ def send_message(current_user):
 
 
 @chats_bp.route('/get_messages/<chat_room_name>', methods=['GET'])
-@jwt_required()
+@logged_in
 def get_messages(current_user, chat_room_name):
     """ Gets all messages from a chat room """
     # check if chatroom exists and the user is part of it
     room = ChatRoom.get_room_by_name(chat_room_name)
-    if room is None or current_user not in room.users:
+    if room is None:
         return make_response(
-            jsonify({"message": "Room not found or user not in room"}),
+            jsonify({"message": "Room not found "}),
             404)
+    
+
+    if User.get_user_by_email(current_user) not in room.users:
+        return make_response(
+            jsonify({"message": "user not in room"}),
+            404)
+
 
     # get all messages from the chat room
     messages = ChatMessage.get_messages_by_room(chat_room_name)
@@ -86,7 +103,7 @@ def get_messages(current_user, chat_room_name):
 
 
 @chats_bp.route('/update/<message_id>', methods=['PUT'])
-@jwt_required()
+@logged_in
 def update(current_user, message_id):
     """ Updates a message in a chat room """
     # check if user exists and the message is from them
@@ -107,7 +124,7 @@ def update(current_user, message_id):
 
 
 @chats_bp.route('/delete/<message_id>', methods=['DELETE'])
-@jwt_required()
+@logged_in
 def delete(current_user, message_id):
     """ Deletes a message in a chat room """
     # check if user exists and the message is from them

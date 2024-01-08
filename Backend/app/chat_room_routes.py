@@ -3,11 +3,12 @@
 
 from flask import Blueprint, request, jsonify, make_response
 from functools import wraps
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime
 from models.user import User
 from models.chat_room import ChatRoom
 from models.chat_message import ChatMessage
+from models.revoked_token import RevokedToken
 
 room_bp = Blueprint('chat_room_routes', __name__, url_prefix='/rooms')
 
@@ -27,7 +28,14 @@ def logged_in(func):
     @jwt_required()
     def wrapper(*args, **kwargs):
         current_user = get_jwt_identity()
+
+         # Check if the token JTI is in the revoked tokens
+        jti = get_jwt()['jti']
+        if RevokedToken.is_token_blacklisted(jti):
+            return jsonify({"error": "Token has been revoked. User is logged out"}), 401
+        
         return func(current_user, *args, **kwargs)
+    
     return wrapper
 
 
