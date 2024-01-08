@@ -4,7 +4,6 @@ import Login from './Login';
 import Navbar from './Navbar';
 import Signup from './Signup';
 import axios from 'axios';
-import footer from './footer';
 import { useEffect, useState } from 'react';
 
 function App() {
