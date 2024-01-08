@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate} from 'react-router-dom';
 import Home from "./home";
 import Login from './Login';
 import Navbar from './Navbar';
@@ -44,7 +44,9 @@ function App() {
           <Route path="/login" element={<Login setLoggedIn={setLoggedIn} setEmail={setEmail} />} />
           <Route path="/signup"  element={<Signup /> } />
           <Route path="/footer" element={<footer />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/Dashboard" element={loggedIn ? <Dashboard /> : <Navigate to="/login" />} />
+          {/* {loggedIn ? <Route path="/" element={<Navigate to="/Dashboard" />} /> : null} */}
+          {/* <Route path="/Dashboard" element={<Dashboard />} /> */}
         </Routes> 
       </BrowserRouter>
     </div>
