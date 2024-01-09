@@ -1,28 +1,30 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import "./Login.css";
 
-function App() {
+function Login({ setLoggedIn, setEmail }) {
   // React States
   const [errorMessages, setErrorMessages] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const navigate = useNavigate();
+  
 
   // User Login info
   const database = [
     {
-      username: "user1",
+      email: "user1@example.com",
       password: "pass1"
     },
     {
-      username: "user2",
+      email: "user2@example.com",
       password: "pass2"
     }
   ];
 
   const errors = {
-    uname: "invalid username",
+    email: "invalid email",
     pass: "invalid password"
   };
 
@@ -31,12 +33,12 @@ function App() {
     event.preventDefault();
     const formData = new FormData(event.target);
     const userData = {
-      username: formData.get('uname'),
+      email: formData.get('email'),
       password: formData.get('pass')
     };
 
     // Send user credentials to the server for login
-    axios.post('http://your-flask-server-address:port/login', userData)
+    axios.post('http://127.0.0.1:5000/login', userData)
       .then(response => {
         // Handle successful login response
         console.log('User logged in:', response.data);
@@ -47,6 +49,11 @@ function App() {
         console.error('Login error:', error);
         // You can set error messages or perform other error handling here
       });
+      setLoggedIn(true); // Update authentication status
+    setEmail(formData.get('email')); // Update user's email
+
+    // Redirect to the dashboard after successful login
+    navigate('/dashboard');
   };
 
   // Generate JSX code for error message
@@ -56,13 +63,13 @@ function App() {
     );
 
   // JSX code for login form
-  const renderForm = (
+    const renderForm = (
     <div className="form">
       <form onSubmit={handleSubmit}>
         <div className="input-container">
-          <label>Username </label>
-          <input type="text" name="uname" required />
-          {renderErrorMessage("uname")}
+          <label>Email </label>
+          <input type="text" name="email" required />
+          {renderErrorMessage("email")}
         </div>
         <div className="input-container">
           <label>Password </label>
@@ -75,7 +82,7 @@ function App() {
       </form>
     </div>
   );
-
+  
   return (
     <div className="app">
       <div className="login-form">
@@ -86,4 +93,6 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
+
+
