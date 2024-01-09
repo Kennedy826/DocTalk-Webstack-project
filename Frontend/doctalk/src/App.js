@@ -44,9 +44,8 @@ function App() {
           <Route path="/login" element={<Login setLoggedIn={setLoggedIn} setEmail={setEmail} />} />
           <Route path="/signup"  element={<Signup /> } />
           <Route path="/footer" element={<footer />} />
-          <Route path="/Dashboard" element={loggedIn ? <Dashboard /> : <Navigate to="/login" />} />
-          {/* {loggedIn ? <Route path="/" element={<Navigate to="/Dashboard" />} /> : null} */}
-          {/* <Route path="/Dashboard" element={<Dashboard />} /> */}
+          {loggedIn ? <Route path="/" element={<Navigate to="/dashboard" />} /> : <Route path="/" element={<Navigate to="/login" />} />}
+          <Route path="/dashboard" element={loggedIn ? <Dashboard /> : <Navigate to="/login" />} />
         </Routes> 
       </BrowserRouter>
     </div>
